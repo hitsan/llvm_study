@@ -37,6 +37,32 @@ public:
             HasError = true;
         }
     };
+    virtual void visit(BinaryOp &Node) override
+    {
+        if(Node.getLeft()){
+            Node.getLeft() -> accept(*this);
+        } else {
+            HasError = true;
+        }
+        if(Node.getRight()){
+            Node.getRight() -> accept(*this)
+        } else {
+            HasError = true;
+        }
+    };
+    virtual void visit(WithDecl &Node) override
+    {
+        for(auto I = Node.begin(), E = Node.end(); I != E; ++I) {
+            if (!Scope.insert(*I).second) {
+                error(Twice, *I);
+            }
+            if (Node.getExpr()){
+                Node.getExpr() -> accept(*this);
+            } else {
+                HasError = true;
+            }
+        }
+    };
 };
 }
 

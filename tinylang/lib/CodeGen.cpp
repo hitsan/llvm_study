@@ -42,5 +42,53 @@ public:
         Builder.CreateCall(CalcWriteFnTy, CalcWriteFn, {V});
         Builder.CreateRet(Int32Zero);
     }
+    virtual void visit(WithDecl &Node) override
+    {
+        FunctionType *ReadFty = FunctionType::get(Int32Ty, {Int8PtrTy}, false);
+        Function *ReadFn = Function::Create(ReadFty, GlobalValue::ExternalLinkage, "calc_read", M);
+        for (auto I = Node.begin(), E = Node.end(); I != E; ++I) {
+            StringRef Var = *I;
+            Constant *StrText = ConstantDataArray::getString(M->getContext(), Var);
+            GlobalValue *Str = new GlobalValue(*M, StrText->getType(), /*isConstant=*/true, GlobalValue::PrivateLinkage, StrText, Twice(Var).concat(".str"));
+            Value *Ptr = Builder.CreateInBoundsGEP(Str, {Int32Zero, Int32Zero}, "ptr");
+            nameMap[Var] = Call;
+        }
+        Node.getExpr() -> accept(*this);
+    };
+    virtual void visit(Factor &Node) override
+    {
+        if(Node.getKind() == Factor::Ident){
+            V = nameMap[Node.getVal()];
+        } else {
+            int intval;
+            Node.getVal().getAsInteger(10, intval);
+            V = ConstantInt::get(Int32Ty, intval, true);
+        }
+    };
+    virtual void visit(BinaryOp &Node) override {
+        Node.getLeft() -> accept(*this);
+        Value *Left = V;
+        Node.getRight()->accept(*this);
+        Value *Right = V;
+        switch (Node.getOperator()) {
+        case BinaryOp::Plus:
+            V = Builder.CreateNSWAdd(Left, Right); break;
+        case BinaryOp::Minus:
+            V = Builder.CreateNSWSub(Left, Right); break;
+        case BinaryOp::Mul:
+            V = Builder.CreateNSWMul(Left, Right); break;
+        case BinaryOp::Div:
+            V = Builder.CreateNSWDiv(Left, Right); break;
+        }
+    };
+};
 }
+
+void CodeGen::compile(AST *Tree)
+{
+    LLVMContext Ctx;
+    Module *M = new Module("calc.expr", Ctx);
+    ToIRVisitor ToIR(M);
+    ToIR.run(Tree);
+    M -> print(outs(), nullptr);
 }
