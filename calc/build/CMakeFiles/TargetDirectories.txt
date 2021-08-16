@@ -1,0 +1,8 @@
+/home/work/calc/build/CMakeFiles/rebuild_cache.dir
+/home/work/calc/build/CMakeFiles/acc_gen.dir
+/home/work/calc/build/CMakeFiles/edit_cache.dir
+/home/work/calc/build/CMakeFiles/omp_gen.dir
+/home/work/calc/build/CMakeFiles/intrinsics_gen.dir
+/home/work/calc/build/src/CMakeFiles/rebuild_cache.dir
+/home/work/calc/build/src/CMakeFiles/edit_cache.dir
+/home/work/calc/build/src/CMakeFiles/calc.dir
